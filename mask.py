@@ -90,6 +90,7 @@ if __name__ == '__main__':
     variable_name = 'data'
     lon_var = 'longitude'  # Customize if necessary
     lat_var = 'latitude'   # Customize if necessary
+    multi_polygon = False  # Set to True if shapefile contains multiple polygons
     
     # Read NetCDF data
     dataset = xr.open_dataset(ncfile)
@@ -98,8 +99,12 @@ if __name__ == '__main__':
     
     # Read shapefile and combine polygons
     shp = gpd.read_file(shapefile)
-    # polygons = shp.geometry[0]
-    polygons = shp.geometry.unary_union  # Merge all polygons into a single geometry
+    
+    if multi_polygon:
+        polygons = shp.geometry.unary_union  # Merge all polygons into a single geometry
+    else:
+        polygons = shp.geometry[0] # Use a single polygon
+        
     mask = polygon_to_mask(polygons, lon, lat)
     
     # Calculate mean within polygon
