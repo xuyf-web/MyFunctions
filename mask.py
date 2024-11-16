@@ -27,6 +27,10 @@ def polygon_to_mask(polygons, lon, lat):
     elif lon.shape != lat.shape:
         raise ValueError("Longitude and latitude arrays must have the same shape when 2D.")
     
+    # ensure lon/lat are numpy arrays
+    lon = np.asarray(lon)
+    lat = np.asarray(lat)
+    
     # Ensure polygons is a list
     if isinstance(polygons, sgeom.base.BaseGeometry):  # Check if it's a single polygon
         polygons = [polygons]
@@ -48,29 +52,20 @@ def polygon_to_mask(polygons, lon, lat):
     mask = mask_flat.reshape(lon.shape)
     return mask
 
-def calculate_mean_within_mask(dataset, variable_name, mask,
-                                  dims=['latitude', 'longitude']):
+def apply_mask_to_data(data, mask,
+                       dims=['latitude', 'longitude']):
     """
     Calculate the mean value of a variable within a polygonal region from a NetCDF file using a shapefile.
     
     Parameters:
-        ncfile (str): Path to the NetCDF file.
-        shapefile (str): Path to the shapefile.
-        variable_name (str): Name of the variable in the NetCDF file.
-        lon_var (str): Name of the longitude variable in the dataset (default: "longitude").
-        lat_var (str): Name of the latitude variable in the dataset (default: "latitude").
+        data (xarray.DataArray): Data variable to calculate the mean from.
+        mask (numpy.ndarray): 2D Boolean mask array where True indicates the point is within the polygon
         dims (list of str): Dimensions to calculate the mean over (default: all).
         
     Returns:
-        float: Mean value of the variable within the polygonal region.
+        masked_data (xarray.DataArray): Data variable with the mask applied.
+        mean_value (float): Mean value of the variable within the polygonal region.
     """
-    # Validate presence of variable
-    if variable_name not in dataset:
-        raise ValueError(f"Variable '{variable_name}' not found in the dataset.")
-    
-    # Extract data
-    data = dataset[variable_name]
-    
     if dims is None:
         dims = data.dims  # Default to all dimensions
     mask_da = xr.DataArray(mask, dims=dims)
@@ -81,19 +76,20 @@ def calculate_mean_within_mask(dataset, variable_name, mask,
     # Calculate mean
     mean_value = masked_data.mean(dim=dims, skipna=True).item()
     
-    return mean_value
+    return masked_data, mean_value
 
 if __name__ == '__main__':
-    # File paths and variable
-    ncfile = 'data.nc'
-    shapefile = 'shapefile.shp'
-    variable_name = 'data'
-    lon_var = 'longitude'  # Customize if necessary
-    lat_var = 'latitude'   # Customize if necessary
+    # Customize your file paths and variable names
+    ncfile        = 'data.nc'
+    shapefile     = 'shapefile.shp'
+    variable_name = 'data_variable'
+    lon_var       = 'longitude'
+    lat_var       = 'latitude'
     multi_polygon = False  # Set to True if shapefile contains multiple polygons
     
     # Read NetCDF data
     dataset = xr.open_dataset(ncfile)
+    data = dataset[variable_name]
     lon = dataset[lon_var].values
     lat = dataset[lon_var].values
     
@@ -103,12 +99,12 @@ if __name__ == '__main__':
     if multi_polygon:
         polygons = shp.geometry.unary_union  # Merge all polygons into a single geometry
     else:
-        polygons = shp.geometry[0] # Use a single polygon
+        polygons = shp.geometry[0] # Use the first single polygon
         
     mask = polygon_to_mask(polygons, lon, lat)
     
     # Calculate mean within polygon
-    mean_value = calculate_mean_within_mask(dataset, variable_name, mask, dims=[lon_var, lon_var])
+    masked_data, mean_value = apply_mask_to_data(data, mask, dims=[lon_var, lon_var])
     
     # Output result
     print(f"Mean value within polygon: {mean_value}")
