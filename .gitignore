@@ -14,3 +14,4 @@ __pycache__/
 
 # Ignore test file
 test.ipynb
+data/
