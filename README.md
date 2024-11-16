@@ -10,6 +10,6 @@ Created Date: 2024-11-14
 ## Mask
 
 掩膜前
-![[figures/mask_before.png]]
+![before](https://github.com/xuyf-web/MyFunctions/blob/main/figures/mask_before.png)
 掩膜后
-![[figures/mask_after.png]]
+![after](https://github.com/xuyf-web/MyFunctions/blob/main/figures/mask_after.png)
