@@ -174,7 +174,7 @@ def plot_domains(params, domains, coastline=True, show_labels=True, extent=None)
 
     # 初始化 Lambert Conformal 投影
     proj = ccrs.LambertConformal(
-        central_longitude=params['stand_lon'],
+        central_longitude=params['ref_lon'],
         central_latitude=params['ref_lat'],
         standard_parallels=(params['truelat1'], params['truelat2'])
     )
