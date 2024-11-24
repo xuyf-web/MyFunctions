@@ -37,13 +37,13 @@ def parse_namelist(namelist_path):
             'ref_lon'          : get_param(r'ref_lon\s*=\s*([-+]?\d*\.\d+|\d+)', namelist_content),
             'truelat1'         : get_param(r'truelat1\s*=\s*([-+]?\d*\.\d+|\d+)', namelist_content),
             'truelat2'         : get_param(r'truelat2\s*=\s*([-+]?\d*\.\d+|\d+)', namelist_content),
-            'stand_lon'        : get_param(r'stand_lon\s*=\s*([-+]?\d*\.\d+|\d+)', namelist_content)
+            # 'stand_lon'        : get_param(r'stand_lon\s*=\s*([-+]?\d*\.\d+|\d+)', namelist_content)
         }
     return params
 
 def init_projection(params):
     # 检查参数是否完整
-    if not all(key in params for key in ['ref_lat', 'ref_lon', 'truelat1', 'truelat2', 'stand_lon']):
+    if not all(key in params for key in ['ref_lat', 'ref_lon', 'truelat1', 'truelat2']):
         raise ValueError('Missing required parameters in namelist.wps')
     
     # 定义平面投影参数
@@ -53,7 +53,7 @@ def init_projection(params):
         'lat_2': params['truelat2'],
         'lat_0': params['ref_lat'],
         'lon_0': params['ref_lon'],
-        'lon_1': params['stand_lon'],
+        # 'lon_1': params['stand_lon'],
         'x_0': 0,
         'y_0': 0,
         'datum': 'WGS84'
